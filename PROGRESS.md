@@ -73,6 +73,13 @@ The Voight platform side, deployed to production at voight.xyz / api.voight.xyz:
 
 ---
 
+### 2026-07-21 — Housekeeping: README + repo polish, npm status
+
+- README expanded into a full SDK reference: quickstart, end-to-end flow diagram, complete API/attribute tables, environment reference with source-grounded detection notes, and the Voight integration section. Repo description + topics set.
+- **npm status:** `@voightxyz/nosana` is **not published yet** (deliberately deferred). Parts 1 and 2 both live in this package, so the first `npm publish --access public` ships everything at once; Part 3 lives in the Voight platform and never touches npm. Nothing is pending besides that single publish.
+
+---
+
 ## Reference
 
 - Grant deliverables (Milestone 1): SDK auto-detection · GPU↔on-chain correlation · explorer badge + Agentic Registry.
