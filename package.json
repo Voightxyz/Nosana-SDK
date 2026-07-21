@@ -1,0 +1,43 @@
+{
+  "name": "@voightxyz/nosana",
+  "version": "0.1.0",
+  "description": "Voight × Nosana SDK — detect Nosana GPU jobs from inside the container and link agents to their on-chain job account.",
+  "license": "MIT",
+  "author": "Voight (https://voight.xyz)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Voightxyz/voight-nosana.git"
+  },
+  "keywords": [
+    "nosana",
+    "solana",
+    "gpu",
+    "ai-agents",
+    "voight"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "test": "tsx --test src/detect.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
