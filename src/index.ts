@@ -1,2 +1,6 @@
 export { detectNosana, isRunningOnNosana, nosanaJobUrl } from './detect.js'
 export type { NosanaContext, NosanaIdSource } from './detect.js'
+export { fetchNosanaJob, decodeJobAccount, NOSANA_JOBS_PROGRAM } from './onchain.js'
+export type { NosanaJobInfo, NosanaJobState, FetchNosanaJobOptions } from './onchain.js'
+export { correlateNosana, nosanaAttributes } from './correlate.js'
+export type { NosanaCorrelation } from './correlate.js'

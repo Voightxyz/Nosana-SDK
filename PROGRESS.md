@@ -7,8 +7,8 @@ Working log for the **Voight × Nosana grant** ($5,000 total, $2,000 in Nosana c
 | # | Deliverable | Status |
 | :-: | --- | :-: |
 | 1 | **Auto-detection of `NOSANA_JOB_ID`** for agents running on Nosana GPUs | ✅ shipped |
-| 2 | **Correlating GPU usage with on-chain activity** | ⏳ next |
-| 3 | **"Nosana-Powered" badge** in the Voight public explorer + registration in the **Agentic Registry** | ⏳ pending |
+| 2 | **Correlating GPU usage with on-chain activity** | ✅ shipped (SDK side) |
+| 3 | **"Nosana-Powered" badge** in the Voight public explorer + registration in the **Agentic Registry** | ⏳ next |
 
 ---
 
@@ -37,6 +37,25 @@ Two consequences worth stating:
 - Unit tests over the real injection shapes (NOSANA_ID, fallbacks, precedence, invalid values, deployment id).
 
 **How it will be used (parts 2–3 preview):** an agent (or the Voight SDK inside it) calls `detectNosana()` at boot; when it returns a context, the agent's registration/events carry `nosana.jobId`, Voight's explorer shows the "Nosana-Powered" badge, and the Agentic Registry entry includes the job linkage.
+
+---
+
+### 2026-07-21 — Part 2: on-chain correlation
+
+The detected `NOSANA_ID` is the address of a `JobAccount` owned by the Nosana Jobs program (`nosJhNRqr2bc9g1nfGDcXXTXvYUmxD4cVwy2pMWhrYM`). Part 2 reads it straight over Solana JSON-RPC with a hand-rolled decoder — still **zero runtime dependencies** (no web3.js, no anchor), so any agent can embed it.
+
+**Layout ground truth:** `nosana-ci/nosana-programs` → `programs/nosana-jobs/src/state.rs` (`JobAccount`: ipfs_job, ipfs_result, market, node, payer, price, project, state, time_end, time_start, timeout) and `types.rs` (`JobState`: Queued=0, Done=2, Stopped=3). RUNNING is derived: claimed (`time_start > 0`) and unfinished (`time_end == 0`).
+
+**Shipped:**
+
+- `fetchNosanaJob(jobId)` → decoded `NosanaJobInfo`: derived state, GPU market, node, payer, project, price (raw + NOS), start/end times, timeout, and the **IPFS CIDv0s** for the job definition and result (reconstructed from the on-chain 32-byte digests), plus dashboard/Solscan URLs.
+- `correlateNosana()` → detection + chain read in one call; never throws on RPC hiccups (an observability failure must not break the agent).
+- `nosanaAttributes()` → flat, stable `nosana.*` attribute set (job_id, state, market, node, price_nos, started_at, ipfs_result, …) ready to merge into Voight observability events and agent registrations. This is the correlation surface Parts 3 consumes.
+- 9 new tests (18 total): full layout decode, state mapping, RUNNING derivation, foreign-account rejection, RPC-failure resilience.
+
+**Validated against mainnet, not just fixtures:** pulled a live job from recent program activity and decoded it with the built package — job `4iVwKBpPqaRSRt4EoBxL4ZjNbZGMM1ijPvUcb7FsyBuR` (QUEUED, market `31P9d5ah…`, 0.0003 NOS, 6h timeout), and its reconstructed `ipfsJobCid` (`QmPUhY3h…`) **resolves on Nosana's IPFS gateway to the actual job definition JSON**. Detection → chain → content, end to end.
+
+**Next (Part 3):** Voight API stores the `nosana.*` context at agent registration → public explorer renders the "Nosana-Powered" badge (linked to the job for independent verification) → Agentic Registry entry carries the Nosana linkage.
 
 ---
 

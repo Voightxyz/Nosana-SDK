@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
-    "test": "tsx --test src/detect.test.ts",
+    "test": "tsx --test src/detect.test.ts src/onchain.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
