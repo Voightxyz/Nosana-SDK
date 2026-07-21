@@ -7,8 +7,8 @@ Working log for the **Voight × Nosana grant** ($5,000 total, $2,000 in Nosana c
 | # | Deliverable | Status |
 | :-: | --- | :-: |
 | 1 | **Auto-detection of `NOSANA_JOB_ID`** for agents running on Nosana GPUs | ✅ shipped |
-| 2 | **Correlating GPU usage with on-chain activity** | ✅ shipped (SDK side) |
-| 3 | **"Nosana-Powered" badge** in the Voight public explorer + registration in the **Agentic Registry** | ⏳ next |
+| 2 | **Correlating GPU usage with on-chain activity** | ✅ shipped |
+| 3 | **"Nosana-Powered" badge** in the Voight public explorer + registration in the **Agentic Registry** | ✅ shipped, live in prod |
 
 ---
 
@@ -56,6 +56,20 @@ The detected `NOSANA_ID` is the address of a `JobAccount` owned by the Nosana Jo
 **Validated against mainnet, not just fixtures:** pulled a live job from recent program activity and decoded it with the built package — job `4iVwKBpPqaRSRt4EoBxL4ZjNbZGMM1ijPvUcb7FsyBuR` (QUEUED, market `31P9d5ah…`, 0.0003 NOS, 6h timeout), and its reconstructed `ipfsJobCid` (`QmPUhY3h…`) **resolves on Nosana's IPFS gateway to the actual job definition JSON**. Detection → chain → content, end to end.
 
 **Next (Part 3):** Voight API stores the `nosana.*` context at agent registration → public explorer renders the "Nosana-Powered" badge (linked to the job for independent verification) → Agentic Registry entry carries the Nosana linkage.
+
+---
+
+### 2026-07-21 — Part 3: "Nosana-Powered" badge + Agentic Registry (live in production)
+
+The Voight platform side, deployed to production at voight.xyz / api.voight.xyz:
+
+- **Ingest.** When an observed agent's events carry the `nosana.*` attributes this SDK emits, Voight lazily stamps `metadata.nosana` on the agent — one idempotent JSONB merge guarded on jobId, fire-and-forget, so correlation can never slow down or break event ingestion. Dashboard URLs are validated against `dashboard.nosana.com` before being stored (nothing arbitrary ever renders in the public explorer).
+- **Public explorer.** Agents running on Nosana show a Nosana-green **"Nosana-Powered"** badge on their explorer card and profile; the profile badge links straight to the Nosana job dashboard so anyone can verify the GPU workload on-chain. The ecosystem stats endpoint (`/v1/stats`) now reports `nosanaPowered`, and the agents list accepts a `nosana=true` filter.
+- **Agentic Registry.** Nosana-powered agents get registered in the MPL Agent Registry (Metaplex) with Voight's registry keypair: a public `agent_uri` endpoint (`/v1/registry/observed/:id`) serves their metadata JSON including the Nosana job linkage, and the minted asset address lands on the agent's record. Registration runs as an idempotent operational script (dry-run by default), reusing the same mint path as Voight's worker-agent registry (active on mainnet since July 15).
+
+**Verified in production:** `/v1/stats` serves `nosanaPowered` and the `registry/observed` route responds. The counter reads 0 today for an honest reason: no deployed agent emits the attributes yet — closing the loop live is the acceptance test below.
+
+**Acceptance test (next, uses the $2,000 Nosana credits):** deploy a real agent on a Nosana GPU with `@voightxyz/nosana` inside, watch detection → correlation → badge → registry happen end to end, and record the job + asset addresses here.
 
 ---
 
