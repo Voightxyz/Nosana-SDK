@@ -1,8 +1,19 @@
-# @voightxyz/nosana
+# Voight Nosana SDK
 
-**Voight × Nosana SDK.** Detect, from inside the container, that an AI agent is running on a [Nosana](https://nosana.com) GPU job, and link it to its **on-chain job account** on Solana.
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue.svg)
+![Dependencies](https://img.shields.io/badge/runtime%20deps-zero-brightgreen.svg)
+![Module](https://img.shields.io/badge/module-ESM%20%2B%20CJS-informational.svg)
 
-Built for the Voight × Nosana grant. Progress log: [PROGRESS.md](PROGRESS.md).
+**Detect, verify, and showcase AI agents running on [Nosana](https://nosana.com) decentralized GPU compute.**
+
+When an agent runs on a Nosana GPU, its job is a real account on Solana. This SDK turns that fact into three capabilities, from inside the agent's own container:
+
+1. **Detection**: know you are running on Nosana, and which job you are.
+2. **On-chain correlation**: read your job account straight from Solana (state, GPU market, node, price, timings, IPFS artifacts) with no heavy dependencies.
+3. **Verifiable identity**: emit stable `nosana.*` attributes that observability platforms and registries can trust, because every claim resolves on-chain.
+
+Agents observed by [Voight](https://voight.xyz) that emit these attributes get a **Nosana-Powered badge** in the [public explorer](https://voight.xyz/explore) and an entry in the MPL Agent Registry.
 
 ## Install
 
@@ -10,43 +21,121 @@ Built for the Voight × Nosana grant. Progress log: [PROGRESS.md](PROGRESS.md).
 npm install @voightxyz/nosana
 ```
 
-## Use
+Zero runtime dependencies. Ships ESM + CJS + TypeScript types. Node 18+.
+
+## Quickstart
+
+```ts
+import { correlateNosana, nosanaAttributes } from '@voightxyz/nosana'
+
+const nosana = await correlateNosana()
+if (nosana) {
+  console.log(nosana.context.jobId)  // on-chain job account (base58)
+  console.log(nosana.job?.state)     // QUEUED | RUNNING | COMPLETED | STOPPED
+  console.log(nosana.job?.market)    // GPU market address
+
+  // Attach to your telemetry / agent registration:
+  const attrs = nosanaAttributes(nosana)
+  // { 'nosana.job_id': '…', 'nosana.state': 'RUNNING', 'nosana.market': '…', … }
+}
+```
+
+Detection alone is synchronous and instant:
 
 ```ts
 import { detectNosana, isRunningOnNosana } from '@voightxyz/nosana'
 
-const nosana = detectNosana()
-if (nosana) {
-  // Running on a Nosana GPU.
-  console.log(nosana.jobId)        // on-chain job account (base58)
-  console.log(nosana.dashboardUrl) // https://dashboard.nosana.com/jobs/<jobId>
+if (isRunningOnNosana()) {
+  const { jobId, dashboardUrl } = detectNosana()!
+  console.log(`Running as Nosana job ${jobId} → ${dashboardUrl}`)
 }
 ```
 
-Zero runtime dependencies. CJS + ESM + TypeScript types.
+## How the loop closes
 
-## How detection works
+```mermaid
+flowchart LR
+  A["Nosana node injects<br/>NOSANA_ID into the container"] --> B["detectNosana()<br/>job id = on-chain account"]
+  B --> C["fetchNosanaJob()<br/>Solana RPC, hand-rolled decoder"]
+  C --> D["nosanaAttributes()<br/>stable nosana.* attribute set"]
+  D --> E["Observability events /<br/>agent registration"]
+  E --> F["Nosana-Powered badge<br/>in the Voight explorer"]
+  E --> G["MPL Agent Registry entry<br/>with the job linkage"]
+```
 
-A Nosana node injects **`NOSANA_ID`** into every `container/run` operation of a job, and its value is the job's **on-chain account address** (verified against the [`nosana-ci/nosana-cli`](https://github.com/nosana-ci/nosana-cli) source: the container env merge in `Provider.ts`, and `jobHandler.claim()` which sets the flow id to the claimed job address). The SDK also honors `NOSANA_JOB_ID` and `JOB_ID` as fallbacks, and carries `DEPLOYMENT_ID` for load-balanced deployments.
-
-Because the detected id **is** the on-chain account, the same value that flags "this agent runs on Nosana" also anchors it to Solana: no extra lookup needed to correlate GPU workloads with on-chain activity.
+Every hop is independently verifiable: the job id resolves on the [Nosana dashboard](https://dashboard.nosana.com) and any Solana explorer, and the IPFS CIDs decoded from the account resolve to the actual job definition and result.
 
 ## API
 
-| Export | Returns |
+### Detection
+
+| Export | Signature | Notes |
+| --- | --- | --- |
+| `detectNosana` | `(env?) => NosanaContext \| null` | Reads `NOSANA_ID` (primary), `NOSANA_JOB_ID`, `JOB_ID`. Synchronous. |
+| `isRunningOnNosana` | `(env?) => boolean` | Convenience predicate. |
+| `nosanaJobUrl` | `(jobId) => string` | Nosana dashboard URL for a job. |
+
+`NosanaContext`: `{ jobId, source, isAddress, dashboardUrl?, deploymentId? }`. The id is validated as a base58 Solana pubkey before any explorer link is produced; a malformed value still detects (the env var is the signal) but never renders a broken URL.
+
+### On-chain
+
+| Export | Signature | Notes |
+| --- | --- | --- |
+| `fetchNosanaJob` | `(jobId, opts?) => Promise<NosanaJobInfo \| null>` | Plain JSON-RPC `getAccountInfo` + local decode. `null` when the account doesn't exist. Throws on transport errors so callers can retry. |
+| `decodeJobAccount` | `(address, bytes) => NosanaJobInfo` | Pure decoder, exposed for testing and indexers. |
+| `NOSANA_JOBS_PROGRAM` | `const string` | `nosJhNRqr2bc9g1nfGDcXXTXvYUmxD4cVwy2pMWhrYM`, verified as the account owner on every fetch. |
+
+`NosanaJobInfo` fields:
+
+| Field | Meaning |
 | --- | --- |
-| `detectNosana(env?)` | `NosanaContext \| null` — `{ jobId, source, isAddress, dashboardUrl?, deploymentId? }` |
-| `isRunningOnNosana(env?)` | `boolean` |
-| `nosanaJobUrl(jobId)` | Nosana dashboard URL for a job |
+| `state` / `stateRaw` | `QUEUED` · `RUNNING` · `COMPLETED` · `STOPPED` · `UNKNOWN`. RUNNING is derived from a claimed (`timeStart > 0`), unfinished (`timeEnd == 0`) job. |
+| `market` | GPU market account the job was posted to. |
+| `node` | Node running the job. `null` while queued. |
+| `payer` / `project` | Who paid and which project posted it. |
+| `priceRaw` / `priceNos` | Job price (u64 raw, and in NOS at 6 decimals). |
+| `timeStart` / `timeEnd` / `timeoutSeconds` | Unix seconds. `null` when not applicable yet. |
+| `ipfsJobCid` / `ipfsResultCid` | CIDv0 reconstructed from the on-chain 32-byte digests. Result is `null` until posted. |
+| `dashboardUrl` / `explorerUrl` | Nosana dashboard and Solscan links. |
+
+### Correlation
+
+| Export | Signature | Notes |
+| --- | --- | --- |
+| `correlateNosana` | `(opts?) => Promise<NosanaCorrelation \| null>` | Detection + chain read in one call. `null` off Nosana. Never throws on RPC hiccups: you always get the context, `job` may be `null`. |
+| `nosanaAttributes` | `(correlation) => Record<string, string \| number>` | Flat, stable `nosana.*` keys ready to merge into telemetry events, registrations, or logs. |
+
+Attribute keys: `nosana.job_id`, `nosana.source`, `nosana.deployment_id`, `nosana.dashboard_url`, `nosana.state`, `nosana.market`, `nosana.node`, `nosana.project`, `nosana.price_nos`, `nosana.started_at`, `nosana.ended_at`, `nosana.ipfs_job`, `nosana.ipfs_result`.
+
+## Environment
+
+| Variable | Role |
+| --- | --- |
+| `NOSANA_ID` | Injected by the Nosana node into every `container/run` operation. Its value is the on-chain job account address. Primary detection source. |
+| `NOSANA_JOB_ID`, `JOB_ID` | Accepted fallbacks (gateway sidecar / explicit job definitions). |
+| `DEPLOYMENT_ID` | Carried through when the job runs behind Nosana's load balancer. |
+| `NOSANA_RPC_URL` / `SOLANA_RPC_URL` | Optional RPC override for `fetchNosanaJob` (defaults to the public mainnet RPC). |
+
+Detection behavior is grounded in the [`nosana-ci/nosana-cli`](https://github.com/nosana-ci/nosana-cli) source (the container env merge in `Provider.ts`, and `jobHandler.claim()` setting the flow id to the claimed job address), and the account layout in [`nosana-ci/nosana-programs`](https://github.com/nosana-ci/nosana-programs) (`nosana-jobs/src/state.rs`).
+
+## Voight platform integration
+
+Agents observed by Voight that emit the `nosana.*` attributes get, automatically:
+
+- A **"Nosana-Powered" badge** on their card and profile in the [public explorer](https://voight.xyz/explore), linked to the job dashboard for independent verification.
+- A `nosanaPowered` counter in the ecosystem stats (`/v1/stats`) and a `nosana=true` filter on the agents API.
+- Registration in the **MPL Agent Registry** (Metaplex) with a public `agent_uri` that carries the Nosana job linkage.
 
 ## Development
 
 ```bash
 npm install
-npm test        # node:test suite
-npm run build   # tsup → dist (esm + cjs + d.ts)
+npm test        # node:test suite (detection + decode + correlation)
+npm run build   # tsup → dist (ESM + CJS + d.ts)
 ```
+
+Build log for this integration: [PROGRESS.md](PROGRESS.md).
 
 ## License
 
-MIT © Galaxyhub Labs Inc. d/b/a Voight
+MIT © [Galaxyhub Labs Inc.](https://voight.xyz) d/b/a Voight
