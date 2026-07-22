@@ -79,6 +79,16 @@ This is not a promise — the full loop ran on a real Nosana GPU job (July 22, 2
 
 Reproduce it yourself: the exact probe container lives in [`probe/`](probe/) (image [`seenfinity/voight-nosana-probe`](https://hub.docker.com/r/seenfinity/voight-nosana-probe)) — deploy it as a Nosana job and watch the chain fire. Full build log: [PROGRESS.md](PROGRESS.md).
 
+## Framework support
+
+The SDK is framework-agnostic: detection is one env read and correlation is one RPC call, so any runtime that can execute four lines of JavaScript at boot is covered. Ready-made integrations:
+
+| Framework | Integration |
+| --- | --- |
+| **Hermes** | Full adapter in [`examples/hermes/`](examples/hermes/): a complete Hermes worker agent on a Nosana GPU, beacon wired in (image [`seenfinity/hermes-nosana`](https://hub.docker.com/r/seenfinity/hermes-nosana)) |
+| **ElizaOS** | Boot-beacon integration in [`examples/elizaos/`](examples/elizaos/): SDK + one line in the start script |
+| **Any Node agent** | Direct SDK use (Quickstart above) or the minimal [`probe/`](probe/) pattern |
+
 ## API
 
 ### Detection
