@@ -92,6 +92,8 @@ Two operational findings, logged for honesty:
 
 Milestone 1 is complete end to end: all three deliverables shipped and proven live.
 
+**Follow-up (same day):** registry entries now carry a **Voight × Nosana card image** (512px, same family as the worker-agent cards, Nosana-green signature), served through the `agent_uri` metadata endpoint — existing assets picked it up with zero on-chain updates.
+
 ---
 
 ### 2026-07-21 — Housekeeping: README + repo polish, npm status
