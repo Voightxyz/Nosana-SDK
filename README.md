@@ -81,13 +81,10 @@ Reproduce it yourself: the exact probe container lives in [`probe/`](probe/) (im
 
 ## Framework support
 
-The SDK is framework-agnostic: detection is one env read and correlation is one RPC call, so any runtime that can execute four lines of JavaScript at boot is covered. Ready-made integrations:
+The SDK is framework-agnostic by design: detection is one env read and correlation is one RPC call, so it works identically inside any agent runtime deployed on Nosana (ElizaOS, Hermes, OpenClaw, custom Node stacks). Two ways in:
 
-| Framework | Integration |
-| --- | --- |
-| **Hermes** | Full adapter in [`examples/hermes/`](examples/hermes/): a complete Hermes worker agent on a Nosana GPU, beacon wired in (image [`seenfinity/hermes-nosana`](https://hub.docker.com/r/seenfinity/hermes-nosana)) |
-| **ElizaOS** | Boot-beacon integration in [`examples/elizaos/`](examples/elizaos/): SDK + one line in the start script |
-| **Any Node agent** | Direct SDK use (Quickstart above) or the minimal [`probe/`](probe/) pattern |
+- **Inside the agent** (any framework): the [`examples/`](examples/) boot beacon — one line in your start command, `VOIGHT_FRAMEWORK` tags the runtime.
+- **Server-side** (no agent changes at all): the same `decodeJobAccount` powers indexing Nosana jobs straight from the chain, which is how Voight captures GPU workloads that never embedded anything.
 
 ## API
 
