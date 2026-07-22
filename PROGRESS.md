@@ -73,6 +73,27 @@ The Voight platform side, deployed to production at voight.xyz / api.voight.xyz:
 
 ---
 
+### 2026-07-22 — ACCEPTANCE TEST PASSED: the full loop, live on a real Nosana GPU
+
+A probe container (`probe/`, image `docker.io/seenfinity/voight-nosana-probe`) was deployed as a real Nosana GPU job using the grant's compute credits. Every link in the chain fired, with independently verifiable artifacts:
+
+| Step | Evidence |
+| --- | --- |
+| Nosana GPU job | [`96zb2aU1VjCEsnZHDX8GCtzLk5afVFGrQjPPxKva7YMp`](https://dashboard.nosana.com/jobs/96zb2aU1VjCEsnZHDX8GCtzLk5afVFGrQjPPxKva7YMp) (market `7AtiXMSH…`, job definition pinned at `QmZPu3Qq…`) |
+| Detection inside the container | job logs print the `NOSANA_ID` context detected by the SDK |
+| Observability event → Voight | agent **nosana-probe** ([`cmrw2pnli2txzjktriyp92kov`](https://voight.xyz/agent/cmrw2pnli2txzjktriyp92kov)) created with `metadata.nosana` stamped at ingest |
+| Explorer badge | **Nosana-Powered** renders live on the public profile; ecosystem stats report `nosanaPowered: 1` |
+| Agentic Registry | MPL Core asset [`CfAWScgEEcDFujo1B8VxTMT9yxqByW8LfEAGTKUFeq5z`](https://www.metaplex.com/agents/CfAWScgEEcDFujo1B8VxTMT9yxqByW8LfEAGTKUFeq5z) minted on mainnet, `agent_uri` → `/v1/registry/observed/cmrw2pnli2txzjktriyp92kov` carrying the job linkage |
+
+Two operational findings, logged for honesty:
+
+1. **In-container RPC**: the probe's own on-chain read returned null inside the node (the public mainnet RPC is not reliably reachable from Nosana nodes). The SDK's fail-open design meant detection and the event still flowed, and Voight's server-side read of the same account covered the correlation. Recommendation for embedders: set `NOSANA_RPC_URL` to a dedicated RPC for in-container reads, or rely on server-side enrichment.
+2. **Job definitions are public on IPFS**: any env var in the definition (like an ingest API key) is world-readable. Use scoped, revocable keys and rotate them after a run.
+
+Milestone 1 is complete end to end: all three deliverables shipped and proven live.
+
+---
+
 ### 2026-07-21 — Housekeeping: README + repo polish, npm status
 
 - README expanded into a full SDK reference: quickstart, end-to-end flow diagram, complete API/attribute tables, environment reference with source-grounded detection notes, and the Voight integration section. Repo description + topics set.
