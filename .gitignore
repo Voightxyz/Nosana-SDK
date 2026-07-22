@@ -2,3 +2,4 @@ node_modules/
 dist/
 *.log
 probe/*.tgz
+probe/job-definition.local.json
