@@ -65,6 +65,20 @@ flowchart LR
 
 Every hop is independently verifiable: the job id resolves on the [Nosana dashboard](https://dashboard.nosana.com) and any Solana explorer, and the IPFS CIDs decoded from the account resolve to the actual job definition and result.
 
+## Proven live on mainnet
+
+This is not a promise — the full loop ran on a real Nosana GPU job (July 22, 2026), and every artifact is public:
+
+| Artifact | Reference |
+| --- | --- |
+| Nosana GPU job | [`96zb2aU1VjCEsnZHDX8GCtzLk5afVFGrQjPPxKva7YMp`](https://dashboard.nosana.com/jobs/96zb2aU1VjCEsnZHDX8GCtzLk5afVFGrQjPPxKva7YMp) — the job logs show the SDK detecting its own `NOSANA_ID` |
+| Job definition on IPFS | [`QmZPu3Qq8eUpME3NrieQ1YFWrQm2xsyD4E4AMx3e3CuR85`](https://nosana.mypinata.cloud/ipfs/QmZPu3Qq8eUpME3NrieQ1YFWrQm2xsyD4E4AMx3e3CuR85) |
+| Agent in the Voight explorer | [`voight.xyz/agent/cmrw2pnli2txzjktriyp92kov`](https://voight.xyz/agent/cmrw2pnli2txzjktriyp92kov) — Nosana-Powered badge, linked to the job |
+| Ecosystem stats | [`api.voight.xyz/v1/stats`](https://api.voight.xyz/v1/stats) → `nosanaPowered` |
+| MPL Agent Registry entry | [`CfAWScgEEcDFujo1B8VxTMT9yxqByW8LfEAGTKUFeq5z`](https://www.metaplex.com/agents/CfAWScgEEcDFujo1B8VxTMT9yxqByW8LfEAGTKUFeq5z) — minted on Solana mainnet, `agent_uri` carries the job linkage |
+
+Reproduce it yourself: the exact probe container lives in [`probe/`](probe/) (image [`seenfinity/voight-nosana-probe`](https://hub.docker.com/r/seenfinity/voight-nosana-probe)) — deploy it as a Nosana job and watch the chain fire. Full build log: [PROGRESS.md](PROGRESS.md).
+
 ## API
 
 ### Detection
