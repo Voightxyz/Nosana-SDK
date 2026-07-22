@@ -23,9 +23,19 @@
  *   offset 225  timeout     i64 LE    (seconds)
  */
 
+import { createHash } from 'node:crypto'
+
 export const NOSANA_JOBS_PROGRAM = 'nosJhNRqr2bc9g1nfGDcXXTXvYUmxD4cVwy2pMWhrYM'
 const DEFAULT_RPC = 'https://api.mainnet-beta.solana.com'
 const JOB_ACCOUNT_MIN_SIZE = 233
+
+/**
+ * Anchor account discriminator: first 8 bytes of sha256("account:JobAccount").
+ * The jobs program owns several account types (markets, runs, jobs); the
+ * discriminator is what actually says "this is a job" — an owner check alone
+ * happily decodes a market queue into garbage (found live in testing).
+ */
+const JOB_DISCRIMINATOR = createHash('sha256').update('account:JobAccount').digest().subarray(0, 8)
 
 export type NosanaJobState = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'STOPPED' | 'UNKNOWN'
 
@@ -105,6 +115,11 @@ function ipfsCidAt(data: Uint8Array, offset: number): string | null {
 export function decodeJobAccount(address: string, data: Uint8Array): NosanaJobInfo {
   if (data.length < JOB_ACCOUNT_MIN_SIZE) {
     throw new Error(`job account too small: ${data.length} < ${JOB_ACCOUNT_MIN_SIZE} bytes`)
+  }
+  for (let i = 0; i < 8; i++) {
+    if (data[i] !== JOB_DISCRIMINATOR[i]) {
+      throw new Error(`account ${address} is not a JobAccount (discriminator mismatch)`)
+    }
   }
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength)
   const stateRaw = data[208]!

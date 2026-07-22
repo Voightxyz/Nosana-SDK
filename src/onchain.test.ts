@@ -1,9 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { decodeJobAccount, fetchNosanaJob, NOSANA_JOBS_PROGRAM } from './onchain.js'
 import { correlateNosana, nosanaAttributes } from './correlate.js'
 
 const JOB_ADDR = '4fobHJEHBxVppziJnUir4GXEJQEsC2JdR4WJqSU7nNKc'
+const DISCRIMINATOR = createHash('sha256').update('account:JobAccount').digest().subarray(0, 8)
 
 /** Build a raw JobAccount buffer per the on-chain layout. */
 function fixture(opts: {
@@ -15,6 +17,7 @@ function fixture(opts: {
   ipfsResult?: number // fill byte; 0 = no result
 }): Uint8Array {
   const data = new Uint8Array(233)
+  data.set(DISCRIMINATOR, 0)
   const view = new DataView(data.buffer)
   data.fill(7, 8, 40) // ipfs_job digest
   data.fill(opts.ipfsResult ?? 0, 40, 72) // ipfs_result digest
@@ -64,6 +67,12 @@ test('completed job carries end time and result CID', () => {
 
 test('rejects a truncated account', () => {
   assert.throws(() => decodeJobAccount(JOB_ADDR, new Uint8Array(100)), /too small/)
+})
+
+test('rejects a same-program account of a different type (wrong discriminator)', () => {
+  const notAJob = fixture({})
+  notAJob[0] = notAJob[0]! ^ 0xff
+  assert.throws(() => decodeJobAccount(JOB_ADDR, notAJob), /discriminator mismatch/)
 })
 
 function rpcResponse(data: Uint8Array | null, owner = NOSANA_JOBS_PROGRAM): typeof fetch {

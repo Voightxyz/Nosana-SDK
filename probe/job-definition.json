@@ -1,0 +1,20 @@
+{
+  "version": "0.1",
+  "type": "container",
+  "meta": {
+    "trigger": "dashboard"
+  },
+  "ops": [
+    {
+      "type": "container/run",
+      "id": "voight-nosana-probe",
+      "args": {
+        "image": "docker.io/seenfinity/voight-nosana-probe:latest",
+        "gpu": true,
+        "env": {
+          "VOIGHT_API_KEY": "REPLACE_WITH_VOIGHT_API_KEY"
+        }
+      }
+    }
+  ]
+}
