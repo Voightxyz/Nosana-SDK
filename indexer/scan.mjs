@@ -79,6 +79,7 @@ function frameworkOf(text) {
   if (/langgraph|langchain/i.test(text)) return 'langgraph'
   if (/crewai/i.test(text)) return 'crewai'
   if (/hermes/i.test(text)) return 'hermes'
+  if (/\bagent\b|agent-test|agentkit/i.test(text)) return 'custom'
   return 'unknown'
 }
 

@@ -1,0 +1,21 @@
+{
+  "version": "0.1",
+  "type": "container",
+  "meta": {
+    "trigger": "dashboard"
+  },
+  "ops": [
+    {
+      "type": "container/run",
+      "id": "nosana-agent-test",
+      "args": {
+        "image": "docker.io/seenfinity/nosana-agent-test:latest",
+        "gpu": true,
+        "env": {
+          "VOIGHT_AGENT_LABEL": "Agent Test Nosana",
+          "VOIGHT_API_KEY": "REPLACE_WITH_VOIGHT_API_KEY"
+        }
+      }
+    }
+  ]
+}

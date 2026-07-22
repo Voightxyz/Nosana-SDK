@@ -84,7 +84,9 @@ Reproduce it yourself: the exact probe container lives in [`probe/`](probe/) (im
 The SDK is framework-agnostic by design: detection is one env read and correlation is one RPC call, so it works identically inside any agent runtime deployed on Nosana (ElizaOS, Hermes, OpenClaw, custom Node stacks). Two ways in:
 
 - **Inside the agent** (any framework): the [`examples/`](examples/) boot beacon — one line in your start command, `VOIGHT_FRAMEWORK` tags the runtime.
-- **Server-side** (no agent changes at all): the same `decodeJobAccount` powers indexing Nosana jobs straight from the chain, which is how Voight captures GPU workloads that never embedded anything.
+- **Server-side** (no agent changes at all): the same `decodeJobAccount` powers the read-only [`indexer/`](indexer/) scanner, which discovers agents straight from the chain + IPFS and tells them apart from plain GPU infra.
+
+How each framework is recognized from public data (image, command, and env signals — and the exact `VOIGHT_FRAMEWORK` override): see [**frameworks/**](frameworks/).
 
 ## API
 
