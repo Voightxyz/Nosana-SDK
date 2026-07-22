@@ -73,14 +73,6 @@ The Voight platform side, deployed to production at voight.xyz / api.voight.xyz:
 
 ---
 
-### 2026-07-23 — Read-only agent scanner (server-side capture, phase 2 preview)
-
-[`indexer/scan.mjs`](indexer/scan.mjs): discovers AI agents on Nosana from public data alone — recent Jobs-program activity, job accounts decoded with this SDK, and job definitions fetched from IPFS. Workloads classify as **agent** (Eliza, Mastra, LangGraph, … via image/command/env patterns), **GPU infra** (vLLM, Ollama, ComfyUI, Folding@home), or **unknown** (skipped: conservative by design, no false agents). Agent jobs group into identities by deployment or project+image.
-
-First real scans: recent activity was 65/65 Folding@home compute jobs, zero agents, zero misclassifications — the honest baseline. The tool writes nothing anywhere; wiring discovered agents into the Voight explorer (which already renders the badge pipeline) is a deliberate, separate step.
-
----
-
 ### 2026-07-22 — ACCEPTANCE TEST PASSED: the full loop, live on a real Nosana GPU
 
 A probe container (`probe/`, image `docker.io/seenfinity/voight-nosana-probe`) was deployed as a real Nosana GPU job using the grant's compute credits. Every link in the chain fired, with independently verifiable artifacts:
@@ -202,6 +194,14 @@ Milestone 1 is complete end to end: all three deliverables shipped and proven li
 
 - README expanded into a full SDK reference: quickstart, end-to-end flow diagram, complete API/attribute tables, environment reference with source-grounded detection notes, and the Voight integration section. Repo description + topics set.
 - **npm status:** `@voightxyz/nosana` is **not published yet** (deliberately deferred). Parts 1 and 2 both live in this package, so the first `npm publish --access public` ships everything at once; Part 3 lives in the Voight platform and never touches npm. Nothing is pending besides that single publish.
+
+---
+
+### 2026-07-23 — Read-only agent scanner (server-side capture, phase 2 preview)
+
+[`indexer/scan.mjs`](indexer/scan.mjs): discovers AI agents on Nosana from public data alone — recent Jobs-program activity, job accounts decoded with this SDK, and job definitions fetched from IPFS. Workloads classify as **agent** (Eliza, Mastra, LangGraph, … via image/command/env patterns), **GPU infra** (vLLM, Ollama, ComfyUI, Folding@home), or **unknown** (skipped: conservative by design, no false agents). Agent jobs group into identities by deployment or project+image.
+
+First real scans: recent activity was 65/65 Folding@home compute jobs, zero agents, zero misclassifications — the honest baseline. The tool writes nothing anywhere; wiring discovered agents into the Voight explorer (which already renders the badge pipeline) is a deliberate, separate step.
 
 ---
 
