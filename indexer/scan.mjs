@@ -60,6 +60,10 @@ async function tryJob(address) {
 
 function classify(def) {
   const ops = Array.isArray(def?.ops) ? def.ops : []
+  // Dashboard deployments pin only a stub on IPFS (empty ops + logistics
+  // endpoints); the real definition stays behind Nosana's deployment-manager
+  // (401 without auth). Only active SDK reporting makes these visible.
+  if (ops.length === 0 && def?.logistics) return 'private'
   const haystacks = []
   for (const op of ops) {
     const a = op?.args ?? {}
@@ -106,7 +110,7 @@ console.log(`found ${jobs.length} job accounts in recent activity`)
 
 // Pull each unique job definition from IPFS and classify.
 const agents = new Map() // key: project + image → agent identity
-const counters = { agent: 0, infra: 0, unknown: 0, noDefinition: 0 }
+const counters = { agent: 0, infra: 0, unknown: 0, private: 0, noDefinition: 0 }
 const samples = { infra: new Set(), unknown: new Set() }
 for (const job of jobs) {
   if (!job.ipfsJobCid) {
@@ -161,7 +165,7 @@ for (const a of agents.values()) {
 }
 console.log('')
 console.log(
-  `classified as GPU infra (model servers, image gen, …): ${counters.infra} · unknown (skipped, conservative): ${counters.unknown} · no definition reachable: ${counters.noDefinition}`,
+  `classified as GPU infra (model servers, image gen, …): ${counters.infra} · private dashboard deployments (definition not public — visible via the SDK): ${counters.private} · unknown (skipped, conservative): ${counters.unknown} · no definition reachable: ${counters.noDefinition}`,
 )
 if (samples.infra.size) console.log('  infra images:  ', [...samples.infra].slice(0, 8).join(' · '))
 if (samples.unknown.size) console.log('  unknown images:', [...samples.unknown].slice(0, 8).join(' · '))
