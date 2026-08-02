@@ -67,17 +67,18 @@ Every hop is independently verifiable: the job id resolves on the [Nosana dashbo
 
 ## Proven live on mainnet
 
-This is not a promise — the full loop ran on a real Nosana GPU job (July 22, 2026), and every artifact is public:
+This is not a promise — the full loop has now run twice on real Nosana GPU jobs. The latest run (August 2, 2026, on an RTX 3060 node), every artifact public:
 
 | Artifact | Reference |
 | --- | --- |
-| Nosana GPU job | [`96zb2aU1VjCEsnZHDX8GCtzLk5afVFGrQjPPxKva7YMp`](https://dashboard.nosana.com/jobs/96zb2aU1VjCEsnZHDX8GCtzLk5afVFGrQjPPxKva7YMp) — the job logs show the SDK detecting its own `NOSANA_ID` |
-| Job definition on IPFS | [`QmZPu3Qq8eUpME3NrieQ1YFWrQm2xsyD4E4AMx3e3CuR85`](https://nosana.mypinata.cloud/ipfs/QmZPu3Qq8eUpME3NrieQ1YFWrQm2xsyD4E4AMx3e3CuR85) |
-| Agent in the Voight explorer | [`voight.xyz/agent/cmrw2pnli2txzjktriyp92kov`](https://voight.xyz/agent/cmrw2pnli2txzjktriyp92kov) — Nosana-Powered badge, linked to the job |
+| Nosana GPU job | [`4KQFyrvw6eGr2uRUvccR2UcG5ovAJW6ys6DuyUoifQw7`](https://dashboard.nosana.com/jobs/4KQFyrvw6eGr2uRUvccR2UcG5ovAJW6ys6DuyUoifQw7) — the job logs show the SDK detecting its own `NOSANA_ID` |
+| Agent in the Voight explorer | [`voight.xyz/agent/cmsc4g119xw34clddokzlg1g2`](https://voight.xyz/agent/cmsc4g119xw34clddokzlg1g2) — **Agent Test Nosana**: Nosana-Powered badge, the Voight × Nosana card, and links back to the job and its registry entry |
 | Ecosystem stats | [`api.voight.xyz/v1/stats`](https://api.voight.xyz/v1/stats) → `nosanaPowered` |
-| MPL Agent Registry entry | [`CfAWScgEEcDFujo1B8VxTMT9yxqByW8LfEAGTKUFeq5z`](https://www.metaplex.com/agents/CfAWScgEEcDFujo1B8VxTMT9yxqByW8LfEAGTKUFeq5z) — minted on Solana mainnet, `agent_uri` carries the job linkage |
+| MPL Agent Registry entry | [`7A3cNLx7WiJqGcXPKVsH5z4wVpCUTN2A63dPz9o9aGKK`](https://www.metaplex.com/agents/7A3cNLx7WiJqGcXPKVsH5z4wVpCUTN2A63dPz9o9aGKK) — minted on Solana mainnet with the Voight × Nosana card, `agent_uri` carries the job linkage |
 
-Reproduce it yourself: the exact probe container lives in [`probe/`](probe/) (image [`seenfinity/voight-nosana-probe`](https://hub.docker.com/r/seenfinity/voight-nosana-probe)) — deploy it as a Nosana job and watch the chain fire. Full build log: [PROGRESS.md](PROGRESS.md).
+Worth knowing: dashboard deployments pin only a logistics stub on IPFS (the runtime definition stays behind Nosana's deployment-manager), which is exactly why the SDK's active reporting is the reliable window into them — the [scanner](indexer/) counts these as *private deployments*.
+
+Reproduce it yourself: the exact probe container lives in [`probe/`](probe/) (image [`seenfinity/nosana-agent-test`](https://hub.docker.com/r/seenfinity/nosana-agent-test)) — deploy it as a Nosana job and watch the chain fire. First acceptance run (July 22) and the full build log: [PROGRESS.md](PROGRESS.md).
 
 ## Framework support
 

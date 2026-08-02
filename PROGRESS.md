@@ -111,6 +111,15 @@ First real scans: recent activity was 65/65 Folding@home compute jobs, zero agen
 
 ---
 
+### 2026-08-02 — Demo run 2: Agent Test Nosana (video artifacts)
+
+Second full-loop run, this time producing the named agent for the demo video:
+
+- Job [`4KQFyrvw…fQw7`](https://dashboard.nosana.com/jobs/4KQFyrvw6eGr2uRUvccR2UcG5ovAJW6ys6DuyUoifQw7) on an RTX 3060 node (market `7AtiXMSH…`) → agent [**Agent Test Nosana**](https://voight.xyz/agent/cmsc4g119xw34clddokzlg1g2) with the badge, the new Voight × Nosana card (official N mark, house style), an enriched profile (description + verification links), and registry asset [`7A3cNLx7…aGKK`](https://www.metaplex.com/agents/7A3cNLx7WiJqGcXPKVsH5z4wVpCUTN2A63dPz9o9aGKK) minted **with the card from birth**. `nosanaPowered` now reads 2.
+- **Architecture finding:** dashboard deployments pin only a logistics stub on IPFS (`ops: []`; the runtime definition sits behind Nosana's deployment-manager, 401 without auth). Passive classification cannot see inside those jobs — the scanner now reports them as **private deployments**, and the SDK's active reporting is the reliable window into them. Exactly the case this SDK exists for.
+
+---
+
 ## Reference
 
 - Grant deliverables (Milestone 1): SDK auto-detection · GPU↔on-chain correlation · explorer badge + Agentic Registry.
